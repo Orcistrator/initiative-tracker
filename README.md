@@ -4,6 +4,8 @@ A simple D&D initiative tracker built with Next.js, Tailwind CSS, and Hugeicons.
 
 ## Setup
 
+Requires **Node.js 18.17+** (Next.js 14). Your current Node 18.18.2 is supported.
+
 ```bash
 npm install
 ```
