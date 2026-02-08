@@ -330,19 +330,20 @@ export function InitiativeTracker() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
   const actionButtonClass =
-    "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm italic text-amber-900/50 transition-colors hover:bg-amber-100/60";
+    "inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-md px-3 py-2 text-sm italic text-amber-900/50 transition-colors hover:bg-amber-100/60 sm:min-w-0 sm:justify-start sm:py-1.5";
 
   return (
     <div className="flex flex-col gap-6 font-sans">
-      <div className={`${styles.trackerPage} overflow-hidden p-6 rounded-lg border border-stone-300 bg-amber-50`}>
-        <div className="mb-4 flex justify-between">
+      <div className={`${styles.trackerPage} overflow-hidden rounded-lg border border-stone-300 bg-amber-50 p-4 sm:p-6`}>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap">
           <button
             type="button"
             onClick={addParticipant}
             className={actionButtonClass}
           >
             <HugeiconsIcon icon={Add01Icon} size={18} />
-            Add participant
+            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">Add participant</span>
           </button>
           <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
             <button
@@ -351,7 +352,8 @@ export function InitiativeTracker() {
               className={actionButtonClass}
             >
               <HugeiconsIcon icon={Refresh01Icon} size={18} />
-              Reset board
+              <span className="sm:hidden">Reset</span>
+              <span className="hidden sm:inline">Reset board</span>
             </button>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -369,19 +371,20 @@ export function InitiativeTracker() {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-        <table className="w-full border-collapse">
+        <div className={`${styles.scrollContainer} -mx-4 sm:-mx-6`}>
+        <table className="w-full min-w-[320px] border-collapse">
           <thead>
             <tr>
-              <th className="sticky left-0 z-10 min-w-[200px] bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900/20">
-                Name
-              </th>
-              <th className="sticky left-[232px] z-10 w-[4.5rem] bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900/20">
-                HP
+              <th className={`${styles.stickyNameHp} ${styles.stickyNameHpDefault} sticky left-0 z-10 min-w-[200px] px-3 py-2.5 text-left text-xs font-semibold text-amber-900/20 sm:min-w-[240px] sm:px-4 sm:py-3 md:min-w-[260px]`}>
+                <div className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1">Name</span>
+                  <span className="w-[3rem] shrink-0 sm:w-[4rem]">HP</span>
+                </div>
               </th>
               {state.phases.map((label, i) => (
                 <th
                   key={i}
-                  className="min-w-[6rem] bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900/20"
+                  className="min-w-[4.5rem] bg-amber-50 px-3 py-2.5 text-left text-xs font-semibold text-amber-900/20 sm:min-w-[5rem] sm:px-4 sm:py-3 md:min-w-[6rem]"
                 >
                   {label}
                 </th>
@@ -396,38 +399,38 @@ export function InitiativeTracker() {
                   isRowActive(state, rowIndex) ? "bg-amber-100/25" : ""
                 }`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-3">
-                  <input
-                    type="text"
-                    placeholder="Add name..."
-                    value={p.name}
-                    onChange={(e) =>
-                      setParticipantName(rowIndex, e.target.value)
-                    }
-                    className="w-full min-w-[200px] border-0 bg-transparent px-0 py-1.5 text-sm font-semibold text-stone-500 placeholder:italic placeholder:text-stone-400/60 focus:outline-none focus:ring-0"
-                  />
-                </td>
-                <td className="sticky left-[232px] z-10 w-[4.5rem] bg-inherit px-4 py-3">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="—"
-                    value={p.hp}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (v === "" || /^\d+$/.test(v))
-                        setParticipantHp(rowIndex, v);
-                    }}
-                    className="w-full min-w-0 border-0 bg-transparent px-0 py-1.5 text-sm text-stone-500 placeholder:italic placeholder:text-stone-400/60 focus:outline-none focus:ring-0"
-                  />
+                <td className={`${styles.stickyNameHp} ${isRowActive(state, rowIndex) ? styles.stickyNameHpActive : styles.stickyNameHpDefault} sticky left-0 z-10 px-3 py-2.5 sm:px-4 sm:py-3`}>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add name..."
+                      value={p.name}
+                      onChange={(e) =>
+                        setParticipantName(rowIndex, e.target.value)
+                      }
+                      className="min-w-0 flex-1 border-0 bg-transparent px-0 py-1.5 text-sm font-semibold text-stone-500 placeholder:italic placeholder:text-stone-400/60 focus:outline-none focus:ring-0 sm:min-w-[8rem]"
+                    />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      placeholder="—"
+                      value={p.hp}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^\d+$/.test(v))
+                          setParticipantHp(rowIndex, v);
+                      }}
+                      className="w-[3rem] shrink-0 border-0 bg-transparent px-0 py-1.5 text-sm text-stone-500 placeholder:italic placeholder:text-stone-400/60 focus:outline-none focus:ring-0 sm:w-[4rem]"
+                    />
+                  </div>
                 </td>
                 {state.phases.map((_, colIndex) => {
                   const cellState = getCellState(rowIndex, colIndex);
                   return (
                     <td
                       key={colIndex}
-                      className="min-w-[5rem] px-4 py-3"
+                      className="min-w-[4.5rem] px-3 py-2.5 sm:min-w-[5rem] sm:px-4 sm:py-3"
                     >
                       {cellState === "waiting" && (
                         <span className="text-sm text-stone-300">
@@ -435,11 +438,11 @@ export function InitiativeTracker() {
                         </span>
                       )}
                       {cellState === "active" && (
-                        <div className="gap-1">
+                        <div className="flex flex-wrap gap-1">
                           <button
                             type="button"
                             onClick={() => markDone(rowIndex, colIndex)}
-                            className="rounded p-1.5 text-emerald-500 transition-colors hover:bg-stone-200 hover:text-emerald-900"
+                            className="min-h-[44px] min-w-[44px] rounded p-2 text-emerald-500 transition-colors hover:bg-stone-200 hover:text-emerald-900 touch-manipulation"
                             title="Done"
                           >
                             <HugeiconsIcon icon={Sword01Icon} size={20} />
@@ -453,7 +456,7 @@ export function InitiativeTracker() {
                             <button
                               type="button"
                               onClick={() => revive(rowIndex, colIndex)}
-                              className="rounded p-1.5 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-900"
+                              className="min-h-[44px] min-w-[44px] rounded p-2 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-900 touch-manipulation"
                               title="Revive"
                             >
                               <HugeiconsIcon icon={HeartAddIcon} size={20} />
@@ -462,7 +465,7 @@ export function InitiativeTracker() {
                             <button
                               type="button"
                               onClick={() => markDead(rowIndex, colIndex)}
-                              className="rounded p-1.5 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-900"
+                              className="min-h-[44px] min-w-[44px] rounded p-2 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-900 touch-manipulation"
                               title="Dead"
                             >
                               <HugeiconsIcon icon={BrokenBoneIcon} size={20} />
@@ -504,6 +507,7 @@ export function InitiativeTracker() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

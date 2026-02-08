@@ -48,3 +48,30 @@ tbody .ruledRow:nth-child(even)::after {
 tbody .ruledRow:last-child::after {
   display: none;
 }
+
+/* Horizontal scroll container - Name and HP stay visible, phases scroll behind */
+.scrollContainer {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Sticky Name+HP column - single cell, no gap, phases scroll behind */
+.stickyNameHp {
+  background: var(--sticky-bg);
+  box-shadow: 2px 0 8px -2px rgb(0 0 0 / 0.12);
+}
+
+.stickyNameHpDefault {
+  --sticky-bg: rgb(255 251 235);
+}
+
+/* Active row - opaque so content below doesn't show through */
+.stickyNameHpActive {
+  --sticky-bg: rgb(254 243 199);
+}
+
+/* Row hover */
+.ruledRow:hover .stickyNameHp {
+  --sticky-bg: rgb(254 243 199);
+}
