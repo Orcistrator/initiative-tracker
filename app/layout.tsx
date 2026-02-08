@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { Figtree } from "next/font/google";
 import "./globals.css";
 
-const figtree = Figtree({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-figtree",
-});
+const fontUrl =
+  "https://fonts.googleapis.com/css2?family=Playwrite+NZ+Basic:wght@100..400&display=swap";
 
 export const metadata: Metadata = {
   title: "Initiative Tracker",
@@ -19,8 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={figtree.variable}>
-      <body className="min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="stylesheet" href={fontUrl} />
+      </head>
+      <body className="min-h-screen bg-stone-50 font-sans text-zinc-900">
         {children}
       </body>
     </html>

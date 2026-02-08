@@ -1,0 +1,50 @@
+/* Paper texture for notebook simulation */
+.trackerPage {
+  position: relative;
+}
+
+.trackerPage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Ruled lines - softer, thinner, notebook ink feel */
+.ruledRow {
+  position: relative;
+  border-bottom: none;
+}
+
+.ruledRow::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(147 197 253 / 0.6) 5%,
+    rgb(147 197 253 / 0.7) 50%,
+    rgb(147 197 253 / 0.6) 95%,
+    transparent 100%
+  );
+}
+
+tbody .ruledRow:nth-child(odd)::after {
+  opacity: 0.88;
+}
+
+tbody .ruledRow:nth-child(even)::after {
+  opacity: 1;
+}
+
+/* No line under the last row */
+tbody .ruledRow:last-child::after {
+  display: none;
+}

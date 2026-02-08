@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import styles from "./InitiativeTracker.module.css";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  Add01Icon,
   HeartAddIcon,
   Refresh01Icon,
   Sword01Icon,
@@ -32,8 +34,10 @@ function isPhaseCellState(v: unknown): v is PhaseCellState {
   return typeof v === "string" && PHASE_CELL_STATES.includes(v as PhaseCellState);
 }
 
+type Participant = { name: string; hp: string };
+
 type State = {
-  participants: string[];
+  participants: Participant[];
   phases: string[];
   values: Record<string, PhaseCellState>;
 };
@@ -65,6 +69,25 @@ function ensureSingleActive(state: State): State {
   return next;
 }
 
+function migrateParticipants(
+  raw: unknown
+): Participant[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((p) => {
+    if (typeof p === "string") return { name: p, hp: "" };
+    if (p && typeof p === "object" && "name" in p) {
+      const name = typeof (p as { name: unknown }).name === "string"
+        ? (p as { name: string }).name
+        : "";
+      const hp = typeof (p as { hp?: unknown }).hp === "string"
+        ? (p as { hp: string }).hp
+        : "";
+      return { name, hp };
+    }
+    return { name: "", hp: "" };
+  });
+}
+
 function loadStateFromStorage(): State {
   if (typeof window === "undefined")
     return { participants: [], phases: ["Phase 1"], values: {} };
@@ -73,14 +96,15 @@ function loadStateFromStorage(): State {
     if (!raw)
       return { participants: [], phases: ["Phase 1"], values: {} };
     const data = JSON.parse(raw) as {
-      participants?: string[];
+      participants?: unknown;
       phases?: string[];
       values?: Record<string, unknown>;
     };
     const phases = data.phases?.length ? data.phases : ["Phase 1"];
     const values = migrateValues(data.values ?? {});
+    const participants = migrateParticipants(data.participants);
     const state: State = {
-      participants: data.participants ?? [],
+      participants,
       phases,
       values,
     };
@@ -186,7 +210,7 @@ export function InitiativeTracker() {
   const addParticipant = useCallback(() => {
     const next: State = ensureSingleActive({
       ...state,
-      participants: [...state.participants, ""],
+      participants: [...state.participants, { name: "", hp: "" }],
     });
     save(next);
   }, [state, save]);
@@ -195,7 +219,23 @@ export function InitiativeTracker() {
     (rowIndex: number, name: string) => {
       const next = { ...state };
       next.participants = [...state.participants];
-      next.participants[rowIndex] = name;
+      next.participants[rowIndex] = {
+        ...state.participants[rowIndex],
+        name,
+      };
+      save(next);
+    },
+    [state, save]
+  );
+
+  const setParticipantHp = useCallback(
+    (rowIndex: number, hp: string) => {
+      const next = { ...state };
+      next.participants = [...state.participants];
+      next.participants[rowIndex] = {
+        ...state.participants[rowIndex],
+        hp,
+      };
       save(next);
     },
     [state, save]
@@ -289,21 +329,29 @@ export function InitiativeTracker() {
 
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
 
+  const actionButtonClass =
+    "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm italic text-amber-900/50 transition-colors hover:bg-amber-100/60";
+
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-medium text-zinc-900 dark:text-zinc-100">
-          Initiative Tracker
-        </h1>
-        <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-6 font-sans">
+      <div className={`${styles.trackerPage} overflow-hidden p-6 rounded-lg border border-stone-300 bg-amber-50`}>
+        <div className="mb-4 flex justify-between">
+          <button
+            type="button"
+            onClick={addParticipant}
+            className={actionButtonClass}
+          >
+            <HugeiconsIcon icon={Add01Icon} size={18} />
+            Add participant
+          </button>
           <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
             <button
               type="button"
               onClick={() => hasData && setResetDialogOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              className={actionButtonClass}
             >
               <HugeiconsIcon icon={Refresh01Icon} size={18} />
-              Reset
+              Reset board
             </button>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -321,19 +369,19 @@ export function InitiativeTracker() {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </header>
-
-      <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="">
-              <th className="sticky left-0 z-10 min-w-[200px] bg-zinc-50 px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-400">
+            <tr>
+              <th className="sticky left-0 z-10 min-w-[200px] bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900/20">
                 Name
+              </th>
+              <th className="sticky left-[232px] z-10 w-[4.5rem] bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900/20">
+                HP
               </th>
               {state.phases.map((label, i) => (
                 <th
                   key={i}
-                  className="min-w-[6rem] bg-zinc-50 px-4 py-3 text-left text-sm font-medium text-zinc-500 dark:bg-zinc-800/50 dark:text-zinc-400"
+                  className="min-w-[6rem] bg-amber-50 px-4 py-3 text-left text-xs font-semibold text-amber-900/20"
                 >
                   {label}
                 </th>
@@ -341,24 +389,37 @@ export function InitiativeTracker() {
             </tr>
           </thead>
           <tbody>
-            {state.participants.map((name, rowIndex) => (
+            {state.participants.map((p, rowIndex) => (
               <tr
                 key={rowIndex}
-                className={`border-b border-zinc-200 transition-colors last:border-b-0 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/50 ${
-                  isRowActive(state, rowIndex)
-                    ? "bg-zinc-100 dark:bg-zinc-800/80"
-                    : ""
+                className={`${styles.ruledRow} transition-colors hover:bg-amber-100/25${
+                  isRowActive(state, rowIndex) ? "bg-amber-100/25" : ""
                 }`}
               >
-                <td className="sticky left-0 z-10 bg-inherit px-4 py-2">
+                <td className="sticky left-0 z-10 bg-inherit px-4 py-3">
                   <input
                     type="text"
-                    placeholder="Character or monster"
-                    value={name}
+                    placeholder="Add name..."
+                    value={p.name}
                     onChange={(e) =>
                       setParticipantName(rowIndex, e.target.value)
                     }
-                    className="w-full min-w-[200px] rounded border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-500"
+                    className="w-full min-w-[200px] border-0 bg-transparent px-0 py-1.5 text-sm font-semibold text-stone-500 placeholder:italic placeholder:text-stone-400/60 focus:outline-none focus:ring-0"
+                  />
+                </td>
+                <td className="sticky left-[232px] z-10 w-[4.5rem] bg-inherit px-4 py-3">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="—"
+                    value={p.hp}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^\d+$/.test(v))
+                        setParticipantHp(rowIndex, v);
+                    }}
+                    className="w-full min-w-0 border-0 bg-transparent px-0 py-1.5 text-sm text-stone-500 placeholder:italic placeholder:text-stone-400/60 focus:outline-none focus:ring-0"
                   />
                 </td>
                 {state.phases.map((_, colIndex) => {
@@ -366,10 +427,10 @@ export function InitiativeTracker() {
                   return (
                     <td
                       key={colIndex}
-                      className="min-w-[5rem] px-4 py-2"
+                      className="min-w-[5rem] px-4 py-3"
                     >
                       {cellState === "waiting" && (
-                        <span className="text-sm text-zinc-300 dark:text-zinc-600">
+                        <span className="text-sm text-stone-300">
                           Waiting
                         </span>
                       )}
@@ -378,7 +439,7 @@ export function InitiativeTracker() {
                           <button
                             type="button"
                             onClick={() => markDone(rowIndex, colIndex)}
-                            className="rounded p-1.5 text-emerald-500 transition-colors hover:bg-zinc-200 hover:text-emerald-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+                            className="rounded p-1.5 text-emerald-500 transition-colors hover:bg-stone-200 hover:text-emerald-900"
                             title="Done"
                           >
                             <HugeiconsIcon icon={Sword01Icon} size={20} />
@@ -392,7 +453,7 @@ export function InitiativeTracker() {
                             <button
                               type="button"
                               onClick={() => revive(rowIndex, colIndex)}
-                              className="rounded p-1.5 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+                              className="rounded p-1.5 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-900"
                               title="Revive"
                             >
                               <HugeiconsIcon icon={HeartAddIcon} size={20} />
@@ -401,7 +462,7 @@ export function InitiativeTracker() {
                             <button
                               type="button"
                               onClick={() => markDead(rowIndex, colIndex)}
-                              className="rounded p-1.5 text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
+                              className="rounded p-1.5 text-stone-500 transition-colors hover:bg-stone-200 hover:text-stone-900"
                               title="Dead"
                             >
                               <HugeiconsIcon icon={BrokenBoneIcon} size={20} />
@@ -410,9 +471,7 @@ export function InitiativeTracker() {
                         </div>
                       )}
                       {cellState === "done" && (
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                          Done
-                        </span>
+                        <span className="text-sm text-stone-500">Done</span>
                       )}
                       {cellState === "dead" && (() => {
                         const revivedCol = getRevivedPhaseColumn(
@@ -425,8 +484,8 @@ export function InitiativeTracker() {
                           <span
                             className={`text-sm ${
                               showAsDone
-                                ? "text-zinc-600 dark:text-zinc-400"
-                                : "text-rose-500 dark:text-rose-500"
+                                ? "text-stone-500"
+                                : "text-rose-500 tracking-[0.08em]"
                             }`}
                           >
                             {showAsDone ? "Done" : "Dead"}
@@ -434,7 +493,7 @@ export function InitiativeTracker() {
                         );
                       })()}
                       {cellState === "revived" && (
-                        <span className="text-sm text-blue-600 dark:text-blue-400">
+                        <span className="text-sm text-blue-600 underline decoration-blue-400/50 decoration-1 underline-offset-1">
                           Revived
                         </span>
                       )}
@@ -443,25 +502,6 @@ export function InitiativeTracker() {
                 })}
               </tr>
             ))}
-            <tr
-              role="button"
-              tabIndex={0}
-              onClick={addParticipant}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  addParticipant();
-                }
-              }}
-              className="cursor-pointer bg-zinc-50/70 transition-colors hover:bg-zinc-100/90 dark:border-zinc-700 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/70"
-            >
-              <td
-                colSpan={1 + state.phases.length}
-                className="sticky left-0 z-10 px-4 py-3 text-sm text-zinc-400 dark:text-zinc-500"
-              >
-                <span className="italic">Click to add participant</span>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>

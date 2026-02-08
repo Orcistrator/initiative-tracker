@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Playwrite NZ Basic", ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Ensure inputs and buttons inherit the handwritten font */
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+}
+
