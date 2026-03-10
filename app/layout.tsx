@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Agentation } from "agentation";
 import "./globals.css";
 
 const fontUrl =
@@ -33,6 +34,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-stone-50 font-sans text-zinc-900">
         {children}
+        {process.env.NODE_ENV === "development" && <Agentation />}
       </body>
     </html>
   );
