@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx skills add benjitaylor/agentation)",
+      "Bash(npx skills add benjitaylor/agentation --yes)",
+      "Bash(npm install agentation)",
+      "Bash(npx agentation-mcp init)",
+      "Bash(printf \"Y\\\\n4747\\\\n\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(list\\(d.keys\\(\\)\\), indent=2\\)\\)\")",
+      "Bash(node -e \"const d=require\\(''/c/Users/Jonathan/.claude.json''\\); console.log\\(Object.keys\\(d\\).join\\(''\\\\n''\\)\\)\")",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const d=JSON.parse\\(fs.readFileSync\\(''C:/Users/Jonathan/.claude.json'',''utf8''\\)\\); console.log\\(Object.keys\\(d\\).join\\(''\\\\n''\\)\\)\")",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const d=JSON.parse\\(fs.readFileSync\\(''C:/Users/Jonathan/.claude.json'',''utf8''\\)\\); console.log\\(JSON.stringify\\(d.mcpServers, null, 2\\)\\)\")",
+      "Bash(npx agentation-mcp init --help)",
+      "mcp__agentation__agentation_get_all_pending"
+    ]
+  }
+}
